@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Compiler avec FPC",
+      "type": "shell",
+      "command": "fpc",
+      "args": [
+        "src/main.pas",
+        "-Fu/opt/homebrew/Cellar/fpc/3.2.2/lib/fpc/3.2.2/units/aarch64-darwin/fcl-json",
+        "-Fu/opt/homebrew/Cellar/fpc/3.2.2/lib/fpc/3.2.2/units/aarch64-darwin/fcl-base",
+        ,
+        ,
+        "-omain"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}
