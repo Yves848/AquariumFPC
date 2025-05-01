@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Pascal (LLDB)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/AquariumLightingService",
+      "args": [],
+      "cwd": "${workspaceFolder}/src",
+      "stopOnEntry": true
+    }
+  ]
+}

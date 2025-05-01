@@ -124,6 +124,7 @@ var
   ConfigFile : String;
   ModeStr : String;
   Stream : TFileStream;
+  DayName : String;
 begin
   ConfigFile := '/etc/aquarium/config.json';
   if not FileExists(ConfigFile) then
@@ -136,18 +137,22 @@ begin
   finally
     Stream.Free;
   end;
-
+  DayName := LowerCase(FormatDateTime('dddd', Now));
   JSON := GetJSON(FileContent);
   try
     ModeStr := LowerCase(JSON.FindPath('mode').AsString);
+    // Writeln('*LoadConfig');
     if ModeStr = 'manual' then
       CurrentServiceMode := smManual
     else
       CurrentServiceMode := smAuto;
     
     ManualState := JSON.FindPath('manual_state').AsString;
-    ontime := JSON.FindPath('on_time').AsString;
-    OffTime := JSON.FindPath('off_time').AsString;
+    ontime := JSON.FindPath(format('schedule.%s.on',[DayName])).AsString;
+    // Writeln('*LoadConfig');
+    OffTime := JSON.FindPath(format('schedule.%s.off',[DayName])).AsString;
+    Writeln(format('On  : %s',[ontime]));
+    Writeln(format('Off : %s',[offtime]));
   finally
     JSON.Free;
   end;
@@ -163,6 +168,7 @@ begin
   begin
     try
       LoadConfig;
+      writeln('Configuration chargée');
       CurrentTime := FormatDateTime('HH:NN',Now);
       case CurrentServiceMode of
         smManual :
