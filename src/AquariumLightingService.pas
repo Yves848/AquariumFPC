@@ -3,6 +3,7 @@ program AquariumLightingService;
 {$mode objfpc}{$H+}
 
 uses
+  cthreads,
   Classes, SysUtils, fpjson, jsonparser, fphttpclient, DateUtils,
   fphttpserver, HTTPDefs;
 
