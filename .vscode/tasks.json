@@ -6,12 +6,10 @@
       "type": "shell",
       "command": "fpc",
       "args": [
-        "src/main.pas",
+        "${file}",
         "-Fu/opt/homebrew/Cellar/fpc/3.2.2/lib/fpc/3.2.2/units/aarch64-darwin/fcl-json",
         "-Fu/opt/homebrew/Cellar/fpc/3.2.2/lib/fpc/3.2.2/units/aarch64-darwin/fcl-base",
-        ,
-        ,
-        "-omain"
+        "-o${fileDirname}/${fileBasenameNoExtension}"
       ],
       "group": {
         "kind": "build",
