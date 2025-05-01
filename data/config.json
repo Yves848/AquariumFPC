@@ -1,4 +1,34 @@
 {
-  "nom": "Yves",
-  "age": 42
+  "mode": "auto",
+  "manual_state": "day",
+  "schedule": {
+    "monday": {
+      "on": "08:00",
+      "off": "20:00"
+    },
+    "tuesday": {
+      "on": "08:00",
+      "off": "20:00"
+    },
+    "wednesday": {
+      "on": "09:00",
+      "off": "21:00"
+    },
+    "thursday": {
+      "on": "08:00",
+      "off": "20:00"
+    },
+    "friday": {
+      "on": "08:00",
+      "off": "20:00"
+    },
+    "saturday": {
+      "on": "10:00",
+      "off": "22:00"
+    },
+    "sunday": {
+      "on": "10:00",
+      "off": "22:00"
+    }
+  }
 }
