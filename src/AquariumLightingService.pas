@@ -160,7 +160,7 @@ end;
 
 procedure RunService;
 var
-  CurrentTime : string;
+  CurrentTime,OnTime, OffTime : ttime;
 begin
   LastCommand := '';
   WriteLn('Service Aquarium démarré.');
@@ -169,7 +169,7 @@ begin
     try
       LoadConfig;
       writeln('Configuration chargée');
-      CurrentTime := FormatDateTime('HH:NN',Now);
+      CurrentTime := StrtoTime(FormatDateTime('HH:NN',Now));
       case CurrentServiceMode of
         smManual :
           begin
