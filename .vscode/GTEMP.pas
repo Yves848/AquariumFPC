@@ -24,8 +24,8 @@ Const
   SLEEP_MS = 60000;
   // 1 minute
   dow: array[0..6] Of string = ('monday', 'tuesday', 'wednesday', 'thursday',
-                               'friday', 'saturday',
-                               'sunday');
+                                'friday', 'saturday',
+                                'sunday');
 
 Function IfThen(ACondition: Boolean; Const ATrue, AFalse: String): string;
 Begin
@@ -87,13 +87,6 @@ Begin
     Begin
       sMode := IfThen(CurrentServiceMode = smAuto,'auto','manual');
       AResponse.Content := Format(
-
-
-
-
-
-
-
 '{"mode": "%s", "manual_state": "%s", "on_time": "%s", "off_time":"%s", "last_command": "%s"}'
                            ,[sMode,ManualState, OnTime, OffTime, LastCommand]
                            );
@@ -134,10 +127,12 @@ Begin
 
 
 
+
 '    body { font-family: sans-serif; background-color: #f2f2f2; padding: 2em; }'
                                       + LineEnding +
                                       '    h1 { color: #2c3e50; }' + LineEnding
                                       +
+
 
 
 
@@ -162,10 +157,12 @@ Begin
 
 
 
+
                                    '<p><span class="label">Mode :</span> %s</p>'
                                       , [IfThen(CurrentServiceMode = smAuto,
                                       'Automatique', 'Manuel')]) + LineEnding +
                                       Format(
+
 
 
 
@@ -181,6 +178,7 @@ Begin
 
 
 
+
                       '<p><span class="label">Heure d''allumage :</span> %s</p>'
                                       , [OnTime]) + LineEnding +
                                       Format(
@@ -190,9 +188,11 @@ Begin
 
 
 
+
                     '<p><span class="label">Heure d''extinction :</span> %s</p>'
                                       , [OffTime]) + LineEnding +
                                       Format(
+
 
 
 
@@ -310,6 +310,7 @@ Begin
 
 
 
+
                                                    'http://192.168.50.202/night'
                                 );
                                 LastCommand := 'night';
@@ -330,6 +331,7 @@ Begin
                              ) Then
                             Begin
                               TFPHTTPClient.SimpleGet(
+
 
 
 
