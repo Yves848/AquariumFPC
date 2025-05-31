@@ -1,0 +1,15 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Formater .pas avec ptop",
+      "type": "shell",
+      "command": "ptop -c ~/.ptopcfg-delphi '${file}' '${file}.tmp' && mv '${file}.tmp' '${file}'",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}

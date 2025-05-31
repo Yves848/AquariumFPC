@@ -273,6 +273,33 @@ Begin
                                'night') Then
                               Begin
                                 TFPHTTPClient.SimpleGet(
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                                                         'http://192.168.50.202/night'
                                 );
                                 LastCommand := 'night';
