@@ -150,7 +150,7 @@ Begin
   Else If query = '/test' Then
   Begin
     response := TStringList.Create;
-    response.loadfromfile('../html/dashboard.html');
+    response.loadfromfile('./html/dashboard.html');
     AResponse.Content := response.Text;
     response.Free;
     AResponse.Code := 200;
