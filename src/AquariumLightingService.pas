@@ -19,7 +19,7 @@ Var
 Const 
   CONFIG_FILE = '/etc/aquarium/config.json';
   // À adapter
-  API_BASE_URL = 'http://192.168.50.202';
+  API_BASE_URL = 'http://192.168.50.201';
   // IP ou nom DNS de ton ESP32
   SLEEP_MS = 2000;
   // 1 minute

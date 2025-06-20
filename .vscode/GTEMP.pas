@@ -19,28 +19,25 @@ Var
 Const 
   CONFIG_FILE = '/etc/aquarium/config.json';
   // À adapter
-  API_BASE_URL = 'http://192.168.50.202';
+  API_BASE_URL = 'http://192.168.50.201';
   // IP ou nom DNS de ton ESP32
   SLEEP_MS = 2000;
   // 1 minute
-  dow: array[0..6] Of string = ('monday', 'tuesday', 'wednesday', 'thursday',
-                                'friday', 'saturday','sunday');
+  dow: array[0..6] Of string = ('monday', 'tuesday', 'wednesday', 'thursday','friday', 'saturday','sunday');
 
-Function IfThen(ACondition: Boolean; Const ATrue, AFalse: String): string;
-Begin
-  If ACondition Then
-    Result := ATrue
-  Else
-    Result := AFalse;
-End;
+  Function IfThen(ACondition: Boolean; Const ATrue, AFalse: String): string;
+  Begin
+    If ACondition Then
+      Result := ATrue
+    Else
+      Result := AFalse;
+  End;
 
 Type 
   tWebServerThread = Class(TThread)
     Private 
       FServer : TFPHTTPServer;
-      Procedure ServerRequest(Sender : tObject; Var ARequest:
-                              TFPHTTPConnectionRequest; Var AResponse:
-                              TFPHTTPConnectionResponse);
+      Procedure ServerRequest(Sender : tObject; Var ARequest: TFPHTTPConnectionRequest; Var AResponse: TFPHTTPConnectionResponse);
     Protected 
       Procedure Execute;
       override;
@@ -72,10 +69,7 @@ Begin
     sleep(100);
 End;
 
-Procedure tWebServerThread.ServerRequest(Sender : TObject; Var ARequest :
-                                         TFPHTTPConnectionRequest; Var AResponse
-                                         : TFPHTTPConnectionResponse);
-
+Procedure tWebServerThread.ServerRequest(Sender : TObject; Var ARequest : TFPHTTPConnectionRequest; Var AResponse : TFPHTTPConnectionResponse);
 Var 
   Query : string;
   sMode : String;
@@ -86,87 +80,79 @@ Begin
     Begin
       sMode := IfThen(CurrentServiceMode = smAuto,'auto','manual');
       AResponse.Content := Format(
-
-'{"mode": "%s", "manual_state": "%s", "on_time": "%s", "off_time":"%s", "last_command": "%s"}'
-                           ,[sMode,ManualState, OnTime, OffTime, LastCommand]);
+      '{"mode": "%s", "manual_state": "%s", "on_time": "%s", "off_time":"%s", "last_command": "%s"}'
+      ,[sMode,ManualState, OnTime, OffTime, LastCommand]);
       AResponse.Code := 200;
     End
   Else If Pos('/setmode',Query) = 1 Then
-         Begin
-           If Pos('mode=auto', Query) > 0 Then
-             Begin
-               CurrentServiceMode := smAuto;
-               AResponse.Content := '{"result": "Mode réglé sur auto"}';
-             End
-           Else If Pos('mode=manual', Query) > 0 Then
-                  Begin
-                    CurrentServiceMode := smManual;
-                    AResponse.Content := '{"result": "Mode réglé sur manual"}'
-                    ;
-                  End
-           Else
-             AResponse.Content := '{"error": "Mode invalide"}';
-           AResponse.Code := 200;
-         End
+  Begin
+    If Pos('mode=auto', Query) > 0 Then
+      Begin
+        CurrentServiceMode := smAuto;
+        AResponse.Content := '{"result": "Mode réglé sur auto"}';
+      End
+    Else If Pos('mode=manual', Query) > 0 Then
+          Begin
+            CurrentServiceMode := smManual;
+            AResponse.Content := '{"result": "Mode réglé sur manual"}'
+            ;
+          End
+    Else
+      AResponse.Content := '{"error": "Mode invalide"}';
+    AResponse.Code := 200;
+  End
   Else If Query = '/dashboard' Then
-         Begin
-           AResponse.ContentType := 'text/html; charset=utf-8';
-           AResponse.Contents.Text := 
-                                      '<!DOCTYPE html>' + LineEnding +
-                                      '<html lang="fr">' + LineEnding +
-                                      '<head>' + LineEnding +
-                                      '  <meta charset="UTF-8">' + LineEnding +
-                                      '  <title>Dashboard Aquarium</title>' +
-                                      LineEnding +
-                                      '  <style>' + LineEnding +
-
-'    body { font-family: sans-serif; background-color: #f2f2f2; padding: 2em; }'
-                                      +
-                                      LineEnding +
-                                      '    h1 { color: #2c3e50; }' + LineEnding
-                                      +
-
-'    .card { background: white; padding: 1em; border-radius: 10px; box-shadow: 2px 2px 8px rgba(0,0,0,0.1); width: 400px; }'
-                                      + LineEnding +
-                                      '    .label { font-weight: bold; }' +
-                                      LineEnding +
-                                      '  </style>' + LineEnding +
-                                      '</head>' + LineEnding +
-                                      '<body>' + LineEnding +
-                                      '<h1>Tableau de bord de l''aquarium</h1>'
-                                      + LineEnding +
-                                      '<div class="card">' + LineEnding +
-                                      Format(
-                                   '<p><span class="label">Mode :</span> %s</p>'
-                                      , [IfThen(CurrentServiceMode = smAuto,
-                                      'Automatique', 'Manuel')]) + LineEnding +
-                                      Format(
-                           '<p><span class="label">État manuel :</span> %s</p>'
-                                      , [ManualState]) + LineEnding +
-                                      Format(
-
-                      '<p><span class="label">Heure d''allumage :</span> %s</p>'
-                                      , [OnTime]) + LineEnding +
-                                      Format(
-
-                    '<p><span class="label">Heure d''extinction :</span> %s</p>'
-                                      , [OffTime]) + LineEnding +
-                                      Format(
-            '<p><span class="label">Dernière commande envoyée :</span> %s</p>'
-                                      , [LastCommand]) + LineEnding +
-                                      '</div>' + LineEnding +
-                                      '</body>' + LineEnding +
-                                      '</html>';
-           AResponse.Code := 200;
-         End
+  Begin
+    AResponse.ContentType := 'text/html; charset=utf-8';
+    AResponse.Contents.Text := 
+    '<!DOCTYPE html>' + LineEnding +
+    '<html lang="fr">' + LineEnding +
+    '<head>' + LineEnding +
+    '  <meta charset="UTF-8">' + LineEnding +
+    '  <title>Dashboard Aquarium</title>' +
+    LineEnding +
+    '  <style>' + LineEnding +
+    '    body { font-family: sans-serif; background-color: #f2f2f2; padding: 2em; }'
+    +
+    LineEnding +
+    '    h1 { color: #2c3e50; }' + LineEnding
+    +
+    '    .card { background: white; padding: 1em; border-radius: 10px; box-shadow: 2px 2px 8px rgba(0,0,0,0.1); width: 400px; }'
+    + LineEnding +
+    '    .label { font-weight: bold; }' +
+    LineEnding +
+    '  </style>' + LineEnding +
+    '</head>' + LineEnding +
+    '<body>' + LineEnding +
+    '<h1>Tableau de bord de l''aquarium</h1>'
+    + LineEnding +
+    '<div class="card">' + LineEnding +
+    Format('<p><span class="label">Mode :</span> %s</p>'
+    , [IfThen(CurrentServiceMode = smAuto,
+    'Automatique', 'Manuel')]) + LineEnding +
+    Format('<p><span class="label">État manuel :</span> %s</p>'
+    , [ManualState]) + LineEnding +
+    Format(
+    '<p><span class="label">Heure d''allumage :</span> %s</p>'
+    , [OnTime]) + LineEnding +
+    Format(
+    '<p><span class="label">Heure d''extinction :</span> %s</p>'
+    , [OffTime]) + LineEnding +
+    Format('<p><span class="label">Dernière commande envoyée :</span> %s</p>'
+    , [LastCommand]) + LineEnding +
+    '</div>' + LineEnding +
+    '</body>' + LineEnding +
+    '</html>';
+    AResponse.Code := 200;
+  End
   Else If query = '/test' Then
-         Begin
-           response := TStringList.Create;
-           response.loadfromfile('../html/dashboard.html');
-           AResponse.Content := response.Text;
-           response.Free;
-           AResponse.Code := 200;
-         End
+  Begin
+    response := TStringList.Create;
+    response.loadfromfile('../html/dashboard.html');
+    AResponse.Content := response.Text;
+    response.Free;
+    AResponse.Code := 200;
+  End
   Else
     Begin
       AResponse.Code := 404;
@@ -174,30 +160,26 @@ Begin
     End;
 End;
 
-Function CallAPI(Const Endpoint: String) : string;
-
+function CallAPI(Const Endpoint: String) : string;
 Var 
   Response: String;
 Begin
   Try
     Response := TFPHTTPClient.SimpleGet(API_BASE_URL + Endpoint);
-    WriteLn(Format('[%s] Called %s -> %s',[FormatDateTime('hh:nn:ss', Now),
-    Endpoint, Response]));
+    WriteLn(Format('[%s] Called %s -> %s',[FormatDateTime('hh:nn:ss', Now), Endpoint, Response]));
     result := Response;
   Except
     on E: Exception Do
-          Begin
-            WriteLn(Format('[%s] HTTP Error: %s', [FormatDateTime('hh:nn:ss',
-                    Now)
-            , E.Message]));
-            result := '';
-          End;
-
-End;
+    begin
+          WriteLn(Format('[%s] HTTP Error: %s', [FormatDateTime('hh:nn:ss', Now)
+          , E.Message]));
+          result := '';
+    end;
+    
+  End;
 End;
 
 Procedure LoadConfig;
-
 Var 
   JSON : TJSONData;
   FileContent : string;
@@ -216,33 +198,32 @@ Begin
     Stream.ReadBuffer(FileContent[1], Stream.Size);
   Finally
     Stream.Free;
-End;
+  End;
 
-//DayName := LowerCase(FormatDateTime('dd', Now));
-DayName := dow[DayOfTheWeek(now)];
-writeln(format('Jour actuel : %s',[DayName]));
-JSON := GetJSON(FileContent);
-Try
-  ModeStr := LowerCase(JSON.FindPath('mode').AsString);
-  // Writeln('*LoadConfig');
-  If ModeStr = 'manual' Then
-    CurrentServiceMode := smManual
-  Else
-    CurrentServiceMode := smAuto;
+  //DayName := LowerCase(FormatDateTime('dd', Now));
+  DayName := dow[DayOfTheWeek(now)];
+  writeln(format('Jour actuel : %s',[DayName]));
+  JSON := GetJSON(FileContent);
+  Try
+    ModeStr := LowerCase(JSON.FindPath('mode').AsString);
+    // Writeln('*LoadConfig');
+    If ModeStr = 'manual' Then
+      CurrentServiceMode := smManual
+    Else
+      CurrentServiceMode := smAuto;
 
-  ManualState := JSON.FindPath('manual_state').AsString;
-  ontime := JSON.FindPath(format('schedule.%s.on',[DayName])).AsString;
-  // Writeln('*LoadConfig');
-  OffTime := JSON.FindPath(format('schedule.%s.off',[DayName])).AsString;
-  Writeln(format('On  : %s',[ontime]));
-  Writeln(format('Off : %s',[offtime]));
-Finally
-  JSON.Free;
-End;
+    ManualState := JSON.FindPath('manual_state').AsString;
+    ontime := JSON.FindPath(format('schedule.%s.on',[DayName])).AsString;
+    // Writeln('*LoadConfig');
+    OffTime := JSON.FindPath(format('schedule.%s.off',[DayName])).AsString;
+    Writeln(format('On  : %s',[ontime]));
+    Writeln(format('Off : %s',[offtime]));
+  Finally
+    JSON.Free;
+  End;
 End;
 
 Procedure RunService;
-
 Var 
   CurrentTime,OnTime, OffTime : ttime;
 Begin
@@ -261,45 +242,36 @@ Begin
       CurrentTime := StrtoTime(FormatDateTime('HH:NN',Now));
       Case CurrentServiceMode Of 
         smManual :
-                   Begin
-                     If (ManualState = 'day') And (LastCommand <> 'day') Then
-                       Begin
-                         TFPHTTPClient.SimpleGet('http://192.168.50.202/day');
-                         LastCommand := 'day';
-                         WriteLn(Format('[%s] Mode manuel: appel /day',[
-                                 FormatDateTime('hh:nn:ss',Now)]));
-                       End
-                     Else If (ManualState = 'night') And (LastCommand <> 'night'
-                             ) Then
-                            Begin
-                              TFPHTTPClient.SimpleGet(
-                                                   'http://192.168.50.202/night'
-                              );
-                              LastCommand := 'night';
-                              Writeln(Format('[%s] Mode manuel: appel /night',[
-                                      FormatDateTime('hh:nn:ss',Now)]));
-                            End;
-                   End;
+            Begin
+              If (ManualState = 'day') And (LastCommand <> 'day') Then
+              Begin
+                TFPHTTPClient.SimpleGet('http://192.168.50.202/day');
+                LastCommand := 'day';
+                WriteLn(Format('[%s] Mode manuel: appel /day',[
+                        FormatDateTime('hh:nn:ss',Now)]));
+              End
+              Else If (ManualState = 'night') And (LastCommand <> 'night') Then
+              Begin
+                TFPHTTPClient.SimpleGet('http://192.168.50.202/night');
+                LastCommand := 'night';
+                Writeln(Format('[%s] Mode manuel: appel /night',[FormatDateTime('hh:nn:ss',Now)]));
+              End;
+            End;
         smAuto :
-                 Begin
-                   If (CurrentTime >= ontime) And (LastCommand <> 'day') Then
-                     Begin
-                       TFPHTTPClient.SimpleGet('http://192.168.50.202/day');
-                       LastCommand := 'day';
-                       Writeln(Format('[%s] Mode auto: appel /day',[
-                               FormatDateTime('hh:nn:ss',now)]));
-                     End
-                   Else If (CurrentTime <= OffTime) And (LastCommand <> 'night')
-                          Then
-                          Begin
-                            TFPHTTPClient.SimpleGet(
-                                                   'http://192.168.50.202/night'
-                            );
-                            LastCommand := 'night';
-                            Writeln(Format('[%s] Mode auto: appel /night',[
-                                    FormatDateTime('hh:nn:ss',now)]));
-                          End;
-                 End;
+            Begin
+              If (CurrentTime >= ontime) And (LastCommand <> 'day') Then
+              Begin
+                TFPHTTPClient.SimpleGet('http://192.168.50.202/day');
+                LastCommand := 'day';
+                Writeln(Format('[%s] Mode auto: appel /day',[FormatDateTime('hh:nn:ss',now)]));
+              End
+              Else If (CurrentTime <= OffTime) And (LastCommand <> 'night') Then
+              Begin
+                TFPHTTPClient.SimpleGet('http://192.168.50.202/night');
+                LastCommand := 'night';
+                Writeln(Format('[%s] Mode auto: appel /night',[FormatDateTime('hh:nn:ss',now)]));
+              End;
+            End;
       End;
       sleep(SLEEP_MS);
     End;
