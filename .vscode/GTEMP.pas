@@ -15,12 +15,11 @@ Type
 Var 
   CurrentServiceMode : TServiceMode;
   ManualState, OnTime, OffTime, LastCommand : string;
+  API_BASE_URL : String = 'http://192.168.50.201';
 
 Const 
   CONFIG_FILE = '/etc/aquarium/config.json';
-  // À adapter
-  API_BASE_URL = 'http://192.168.50.201';
-  // IP ou nom DNS de ton ESP32
+  
   SLEEP_MS = 2000;
   // 1 minute
   dow: array[0..6] Of string = ('monday', 'tuesday', 'wednesday', 'thursday','friday', 'saturday','sunday');
@@ -37,20 +36,22 @@ Type
   tWebServerThread = Class(TThread)
     Private 
       FServer : TFPHTTPServer;
+      base_url : String;
       Procedure ServerRequest(Sender : tObject; Var ARequest: TFPHTTPConnectionRequest; Var AResponse: TFPHTTPConnectionResponse);
     Protected 
       Procedure Execute;
       override;
     Public 
-      constructor Create;
+      constructor Create(pBase_url: String = '');
       destructor Destroy;
       override;
   End;
 
-  constructor tWebServerThread.Create;
+  constructor tWebServerThread.Create(pBase_url: string = '');
 Begin
   inherited Create(False);
   FreeOnTerminate := True;
+  base_url := pBase_url;
   FServer := TFPHTTPServer.Create(Nil);
   FServer.Port := 8080;
   FServer.OnRequest := @ServerRequest;
@@ -165,6 +166,7 @@ Var
   Response: String;
 Begin
   Try
+    WriteLn(Format('[%s] Called %s',[FormatDateTime('hh:nn:ss', Now), API_BASE_URL+endpoint]));
     Response := TFPHTTPClient.SimpleGet(API_BASE_URL + Endpoint);
     WriteLn(Format('[%s] Called %s -> %s',[FormatDateTime('hh:nn:ss', Now), Endpoint, Response]));
     result := Response;
@@ -200,11 +202,12 @@ Begin
     Stream.Free;
   End;
 
-  //DayName := LowerCase(FormatDateTime('dd', Now));
   DayName := dow[DayOfTheWeek(now)];
   writeln(format('Jour actuel : %s',[DayName]));
   JSON := GetJSON(FileContent);
   Try
+    API_BASE_URL := JSON.FindPath('base_url').AsString;
+    Writeln(format('Base URL : %s',[API_BASE_URL]));
     ModeStr := LowerCase(JSON.FindPath('mode').AsString);
     // Writeln('*LoadConfig');
     If ModeStr = 'manual' Then
@@ -229,12 +232,12 @@ Var
 Begin
   LastCommand := 'day';
   WriteLn('Service Aquarium démarré.');
+  LoadConfig;
+  Writeln('Chargement de la configuration...');
+  writeln('Configuration chargée');
   While True Do
-    Begin
+    Begin    
       CallAPI('/data');
-      Writeln('Chargement de la configuration...');
-      LoadConfig;
-      writeln('Configuration chargée');
       OnTime := 0.0;
       // Initialize to a default of midnight
       OffTime := 0.0;
@@ -245,29 +248,29 @@ Begin
             Begin
               If (ManualState = 'day') And (LastCommand <> 'day') Then
               Begin
-                TFPHTTPClient.SimpleGet('http://192.168.50.202/day');
+                TFPHTTPClient.SimpleGet(Format('%sday',[API_BASE_URL]));
                 LastCommand := 'day';
                 WriteLn(Format('[%s] Mode manuel: appel /day',[
                         FormatDateTime('hh:nn:ss',Now)]));
               End
               Else If (ManualState = 'night') And (LastCommand <> 'night') Then
               Begin
-                TFPHTTPClient.SimpleGet('http://192.168.50.202/night');
+                TFPHTTPClient.SimpleGet(format('%s',['%/night']));
                 LastCommand := 'night';
-                Writeln(Format('[%s] Mode manuel: appel /night',[FormatDateTime('hh:nn:ss',Now)]));
+                Writeln(Format('[%s] Mode manuel: appel night',[FormatDateTime('hh:nn:ss',Now)]));
               End;
             End;
         smAuto :
             Begin
               If (CurrentTime >= ontime) And (LastCommand <> 'day') Then
               Begin
-                TFPHTTPClient.SimpleGet('http://192.168.50.202/day');
+                TFPHTTPClient.SimpleGet(Format('%sday',[API_BASE_URL]));
                 LastCommand := 'day';
                 Writeln(Format('[%s] Mode auto: appel /day',[FormatDateTime('hh:nn:ss',now)]));
               End
               Else If (CurrentTime <= OffTime) And (LastCommand <> 'night') Then
               Begin
-                TFPHTTPClient.SimpleGet('http://192.168.50.202/night');
+                TFPHTTPClient.SimpleGet(Format('%snight',[API_BASE_URL]));
                 LastCommand := 'night';
                 Writeln(Format('[%s] Mode auto: appel /night',[FormatDateTime('hh:nn:ss',now)]));
               End;

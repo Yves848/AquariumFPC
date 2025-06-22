@@ -1,5 +1,4 @@
-#!/bin/zsh
-
+#!/usr/bin/zsh
 # Fichiers source
 CONFIG_JSON="./data/config.json"
 SOURCE_PAS="./src/AquariumLightingService.pas"
