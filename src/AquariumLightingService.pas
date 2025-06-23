@@ -6,6 +6,7 @@ Program AquariumLightingService;
 Uses 
   {$IFDEF UNIX} cthreads,{} {$ENDIF}
   {$IFDEF WINDOWS} windows,{$ENDIF}
+  showtime,
 Classes, SysUtils, fpjson, jsonparser, fphttpclient, DateUtils,
 fphttpserver, HTTPDefs;
 
@@ -27,7 +28,7 @@ Const
   Function IfThen(ACondition: Boolean; Const ATrue, AFalse: String): string;
   Begin
     If ACondition Then
-      Result := ATrue
+       Result := ATrue
     Else
       Result := AFalse;
   End;
