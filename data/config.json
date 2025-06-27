@@ -1,5 +1,6 @@
 {
   "base_url": "http://192.168.50.201",
+  "SLEEP_MS": 5,
   "mode": "auto",
   "manual_state": "day",
   "schedule": {

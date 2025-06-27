@@ -34,9 +34,10 @@ implementation
     // FPC : Sunday = 1, Monday = 2, ..., Saturday = 7
     // European : Monday = 1, ..., Sunday = 7
     ISO := DayOfTheWeek(ADate);
-    Result := ISO + 1;;
-    if Result > 6 then
-      Result := 0;
+    Result := ISO -1;
+    // Result := ISO + 1;
+    // if Result > 6 then
+    //   Result := 0;
   end;
 
 end.

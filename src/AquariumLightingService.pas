@@ -17,11 +17,11 @@ Var
   CurrentServiceMode : TServiceMode;
   ManualState, OnTime, OffTime, LastCommand : string;
   API_BASE_URL : String = 'http://192.168.50.201';
-
+  SLEEP_MS : integer = 1000;
 Const 
   CONFIG_FILE = '/etc/aquarium/config.json';
   
-  SLEEP_MS = 2000;
+  
   // 1 minute
   dow: array[0..6] Of string = ('monday', 'tuesday', 'wednesday', 'thursday','friday', 'saturday','sunday');
 
@@ -203,11 +203,12 @@ Begin
     Stream.Free;
   End;
 
-  DayName := dow[DayOfTheWeek(now)];
+  DayName := dow[DayOfWeekEuropean(now)];
   writeln(format('Jour actuel : %s',[DayName]));
   JSON := GetJSON(FileContent);
   Try
     API_BASE_URL := JSON.FindPath('base_url').AsString;
+    SLEEP_MS := JSON.FindPath('sleep_ms').AsInteger * 1000;  
     Writeln(format('Base URL : %s',[API_BASE_URL]));
     ModeStr := LowerCase(JSON.FindPath('mode').AsString);
     // Writeln('*LoadConfig');
@@ -244,6 +245,7 @@ Begin
       OffTime := 0.0;
       // Initialize to a default of midnight
       CurrentTime := StrtoTime(FormatDateTime('HH:NN',Now));
+      WriteLn(Format('[%s] Heure actuelle : %s',[FormatDateTime('hh:nn:ss',Now), FormatDateTime('HH:NN',CurrentTime)]));
       Case CurrentServiceMode Of 
         smManual :
             Begin
