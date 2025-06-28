@@ -307,12 +307,12 @@ Begin
               writeln(Format('[%s] Heure d''extinction : %s',[FormatDateTime('hh:nn:ss',Now), FormatDateTime('hh:nn:ss',offtime)]));
               writeln(Format('[%s] État actuel : %s',[FormatDateTime('hh:nn:ss',Now), state]));
               // Convert ontime and of
-              If (CurrentTime >= ontime) And (state <> 'day') Then
+              If (CurrentTime >= ontime and CurrentTime < offtime>) And (state <> 'day') Then
               Begin
                 SetLightingMode('day');
                 LastCommand := 'day';
                 Writeln(Format('[%s] Mode auto: appel /day',[FormatDateTime('hh:nn:ss',now)]));
-              End;
+              End else
               If (CurrentTime >= OffTime) And (state <> 'night') Then
               Begin
                 SetLightingMode('night');
