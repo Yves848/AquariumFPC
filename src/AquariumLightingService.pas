@@ -190,6 +190,7 @@ Var
   ModeStr : String;
   Stream : TFileStream;
   DayName : String;
+  sleep : string;
 Begin
   ConfigFile := '/etc/aquarium/config.json';
   Writeln(format('Chargement de la configuration depuis %s',[ConfigFile]));
@@ -206,9 +207,12 @@ Begin
   DayName := dow[DayOfWeekEuropean(now)];
   writeln(format('Jour actuel : %s',[DayName]));
   JSON := GetJSON(FileContent);
+  Writeln('Chargement de la configuration JSON...');
+  sleep := JSON.FindPath('SLEEP_MS').AsString;
+  writeln(format('Sleep ms : %s',[sleep]));
   Try
     API_BASE_URL := JSON.FindPath('base_url').AsString;
-    SLEEP_MS := JSON.FindPath('sleep_ms').AsInteger * 1000;  
+    
     Writeln(format('Base URL : %s',[API_BASE_URL]));
     ModeStr := LowerCase(JSON.FindPath('mode').AsString);
     // Writeln('*LoadConfig');
