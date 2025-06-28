@@ -15,7 +15,8 @@ Type
 
 Var 
   CurrentServiceMode : TServiceMode;
-  ManualState, OnTime, OffTime, LastCommand : string;
+  OnTime, OffTime : ttime;
+  ManualState,  LastCommand : string;
   API_BASE_URL : String = 'http://192.168.50.201';
   SLEEP_MS : integer = 1000;
 Const 
@@ -78,6 +79,7 @@ Var
   response : tstringlist;
 Begin
   Query := Arequest.URL;
+  WriteLn(Format('[%s] Requête reçue : %s',[FormatDateTime('hh:nn:ss',Now), Query]));
   If Query = '/Status' Then
     Begin
       sMode := IfThen(CurrentServiceMode = smAuto,'auto','manual');
@@ -160,6 +162,7 @@ Begin
       AResponse.Code := 404;
       AResponse.Content := '{"error": "Not Found"}';
     End;
+    
 End;
 
 function CallAPI(Const Endpoint: String) : string;
@@ -169,7 +172,7 @@ Begin
   Try
     WriteLn(Format('[%s] Called %s',[FormatDateTime('hh:nn:ss', Now), API_BASE_URL+endpoint]));
     Response := TFPHTTPClient.SimpleGet(API_BASE_URL + Endpoint);
-    WriteLn(Format('[%s] Called %s -> %s',[FormatDateTime('hh:nn:ss', Now), Endpoint, Response]));
+    // WriteLn(Format('[%s] Called %s -> %s',[FormatDateTime('hh:nn:ss', Now), Endpoint, Response]));
     result := Response;
   Except
     on E: Exception Do
@@ -212,77 +215,113 @@ Begin
   writeln(format('Sleep ms : %s',[sleep]));
   Try
     API_BASE_URL := JSON.FindPath('base_url').AsString;
-    
+    SLEEP_MS := StrToIntDef(sleep, 1)*1000;
     Writeln(format('Base URL : %s',[API_BASE_URL]));
     ModeStr := LowerCase(JSON.FindPath('mode').AsString);
-    // Writeln('*LoadConfig');
     If ModeStr = 'manual' Then
       CurrentServiceMode := smManual
     Else
       CurrentServiceMode := smAuto;
 
     ManualState := JSON.FindPath('manual_state').AsString;
-    ontime := JSON.FindPath(format('schedule.%s.on',[DayName])).AsString;
-    // Writeln('*LoadConfig');
-    OffTime := JSON.FindPath(format('schedule.%s.off',[DayName])).AsString;
-    Writeln(format('On  : %s',[ontime]));
-    Writeln(format('Off : %s',[offtime]));
+    ontime := StrtoTime(JSON.FindPath(format('schedule.%s.on',[DayName])).AsString);
+    OffTime := strtotime(JSON.FindPath(format('schedule.%s.off',[DayName])).AsString);
+    Writeln(format('On  : %s',[FormatDateTime('hh:nn:ss',ontime)]));
+    Writeln(format('Off : %s',[FormatDateTime('hh:nn:ss',offtime)]));
   Finally
     JSON.Free;
   End;
 End;
 
+procedure SetLightingMode(Mode: string);
+Var
+  Endpoint: string;
+  Client: TFPHTTPClient;
+  Response: string;
+Begin
+  Endpoint := Format('%s/%s',[API_BASE_URL,Mode]);
+  WriteLn(Format('[%s] Setting lighting mode to %s',[FormatDateTime('hh:nn:ss', Now), Mode]));
+  Client := TFPHTTPClient.Create(nil);
+  Try
+    Client.AddHeader('Content-Type', 'application/json');
+    Response := Client.Post(Endpoint);
+    WriteLn(Format('[%s] Lighting mode set to %s. Response: %s',
+      [FormatDateTime('hh:nn:ss', Now), Mode, Response]));
+  Except
+    on E: Exception Do
+      WriteLn(Format('[%s] Error setting lighting mode: %s',
+        [FormatDateTime('hh:nn:ss', Now), E.Message])); 
+  end;
+  Client.Free;
+End;
+
 Procedure RunService;
 Var 
-  CurrentTime,OnTime, OffTime : ttime;
+  CurrentTime : TTime;
+  response : string;
+  state : string;
+  JSON : TJSONData;
 Begin
   LastCommand := 'day';
   WriteLn('Service Aquarium démarré.');
+  OnTime := 0.0;
+  // Initialize to a default of midnight
+  OffTime := 0.0;
+  // Initialize to a default of midnight
   LoadConfig;
   Writeln('Chargement de la configuration...');
   writeln('Configuration chargée');
   While True Do
     Begin    
-      CallAPI('/data');
-      OnTime := 0.0;
-      // Initialize to a default of midnight
-      OffTime := 0.0;
-      // Initialize to a default of midnight
+      response := CallAPI('/data');    
+      JSON := GetJSON(response);
+      state := JSON.FindPath('state').AsString;
+      WriteLn(Format('[%s] Réponse de l''API : %s',[FormatDateTime('hh:nn:ss',Now), response]));
       CurrentTime := StrtoTime(FormatDateTime('HH:NN',Now));
       WriteLn(Format('[%s] Heure actuelle : %s',[FormatDateTime('hh:nn:ss',Now), FormatDateTime('HH:NN',CurrentTime)]));
+      WriteLn(Format('[%s] État actuel : %s',[FormatDateTime('hh:nn:ss',Now), CurrentServiceMode.ToString]));
       Case CurrentServiceMode Of 
         smManual :
             Begin
-              If (ManualState = 'day') And (LastCommand <> 'day') Then
+              writeln(Format('[%s] Mode manuel activé',[FormatDateTime('hh:nn:ss',Now)]));
+              If (ManualState = 'day') And (state <> 'day') Then
               Begin
-                TFPHTTPClient.SimpleGet(Format('%sday',[API_BASE_URL]));
+                // TFPHTTPClient.SimpleGet(Format('%s/day',[API_BASE_URL]));
+                SetLightingMode('day');
                 LastCommand := 'day';
                 WriteLn(Format('[%s] Mode manuel: appel /day',[
                         FormatDateTime('hh:nn:ss',Now)]));
-              End
-              Else If (ManualState = 'night') And (LastCommand <> 'night') Then
+              End;
+              If (ManualState = 'night') And (state <> 'night') Then
               Begin
-                TFPHTTPClient.SimpleGet(format('%s',['%/night']));
+                // TFPHTTPClient.SimpleGet(format('%s/night',[API_BASE_URL]));
+                SetLightingMode('night');
                 LastCommand := 'night';
                 Writeln(Format('[%s] Mode manuel: appel night',[FormatDateTime('hh:nn:ss',Now)]));
               End;
             End;
         smAuto :
             Begin
-              If (CurrentTime >= ontime) And (LastCommand <> 'day') Then
+              writeln(Format('[%s] Mode automatique activé',[FormatDateTime('hh:nn:ss',Now)]));
+              writeln(Format('[%s] Heure d''allumage : %s',[FormatDateTime('hh:nn:ss',Now), FormatDateTime('hh:nn:ss',ontime)]));
+              writeln(Format('[%s] Heure d''extinction : %s',[FormatDateTime('hh:nn:ss',Now), FormatDateTime('hh:nn:ss',offtime)]));
+              writeln(Format('[%s] État actuel : %s',[FormatDateTime('hh:nn:ss',Now), state]));
+              // Convert ontime and of
+              If (CurrentTime >= ontime) And (state <> 'day') Then
               Begin
-                TFPHTTPClient.SimpleGet(Format('%sday',[API_BASE_URL]));
+                SetLightingMode('day');
                 LastCommand := 'day';
                 Writeln(Format('[%s] Mode auto: appel /day',[FormatDateTime('hh:nn:ss',now)]));
-              End
-              Else If (CurrentTime <= OffTime) And (LastCommand <> 'night') Then
+              End;
+              If (CurrentTime >= OffTime) And (state <> 'night') Then
               Begin
-                TFPHTTPClient.SimpleGet(Format('%snight',[API_BASE_URL]));
+                SetLightingMode('night');
                 LastCommand := 'night';
                 Writeln(Format('[%s] Mode auto: appel /night',[FormatDateTime('hh:nn:ss',now)]));
               End;
             End;
       End;
+      writeln(format('[%s] Attente de %d ms',[FormatDateTime('hh:nn:ss',Now), SLEEP_MS]));
       sleep(SLEEP_MS);
     End;
 End;
