@@ -279,7 +279,7 @@ Begin
       WriteLn(Format('[%s] Réponse de l''API : %s',[FormatDateTime('hh:nn:ss',Now), response]));
       CurrentTime := StrtoTime(FormatDateTime('HH:NN',Now));
       WriteLn(Format('[%s] Heure actuelle : %s',[FormatDateTime('hh:nn:ss',Now), FormatDateTime('HH:NN',CurrentTime)]));
-      WriteLn(Format('[%s] État actuel : %s',[FormatDateTime('hh:nn:ss',Now), CurrentServiceMode.ToString]));
+      WriteLn(Format('[%s] État actuel : %s',[FormatDateTime('hh:nn:ss',Now), inttostr(CurrentServiceMode)]));
       Case CurrentServiceMode Of 
         smManual :
             Begin
