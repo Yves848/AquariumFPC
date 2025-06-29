@@ -172,7 +172,10 @@ Begin
            response.Free;
            AResponse.Code := 200;
          End
-  Else
+  Else if query = '/mode' Then
+  begin
+    
+  end else
     Begin
       AResponse.Code := 404;
       AResponse.Content := '{"error": "Not Found connard"}';
@@ -186,8 +189,7 @@ Var
   Response: String;
 Begin
   Try
-    WriteLn(Format('[%s] Called %s',[FormatDateTime('hh:nn:ss', Now),
-    API_BASE_URL+endpoint]));
+    // WriteLn(Format('[%s] Called %s',[FormatDateTime('hh:nn:ss', Now),API_BASE_URL+endpoint]));
     Response := TFPHTTPClient.SimpleGet(API_BASE_URL + Endpoint);
 
 // WriteLn(Format('[%s] Called %s -> %s',[FormatDateTime('hh:nn:ss', Now), Endpoint, Response]));
@@ -263,8 +265,7 @@ Var
   Response: string;
 Begin
   Endpoint := Format('%s/%s',[API_BASE_URL,Mode]);
-  WriteLn(Format('[%s] Setting lighting mode to %s',[FormatDateTime('hh:nn:ss',
-          Now), Mode]));
+  // WriteLn(Format('[%s] Setting lighting mode to %s',[FormatDateTime('hh:nn:ss', Now), Mode]));
   Client := TFPHTTPClient.Create(Nil);
   Try
     Client.AddHeader('Content-Type', 'application/json');
@@ -301,13 +302,10 @@ Begin
       response := CallAPI('/data');
       JSON := GetJSON(response);
       state := JSON.FindPath('state').AsString;
-      WriteLn(Format('[%s] Réponse de l''API : %s',[FormatDateTime('hh:nn:ss',
-              Now), response]));
+      // WriteLn(Format('[%s] Réponse de l''API : %s',[FormatDateTime('hh:nn:ss',Now), response]));
       CurrentTime := StrtoTime(FormatDateTime('HH:NN',Now));
-      WriteLn(Format('[%s] Heure actuelle : %s',[FormatDateTime('hh:nn:ss',Now),
-      FormatDateTime('HH:NN',CurrentTime)]));
-      WriteLn(Format('[%s] État actuel : %s',[FormatDateTime('hh:nn:ss',Now),
-      GetEnumName(TypeInfo(TServiceMode), Ord(CurrentServiceMode))]));
+      // WriteLn(Format('[%s] Heure actuelle : %s',[FormatDateTime('hh:nn:ss',Now), FormatDateTime('HH:NN',CurrentTime)]));
+      // WriteLn(Format('[%s] État actuel : %s',[FormatDateTime('hh:nn:ss',Now), GetEnumName(TypeInfo(TServiceMode), Ord(CurrentServiceMode))]));
       Case CurrentServiceMode Of 
         smManual :
                    Begin
@@ -330,40 +328,28 @@ Begin
                    End;
         smAuto :
                  Begin
-                   writeln(Format('[%s] Mode automatique activé',[
-                           FormatDateTime('hh:nn:ss',Now)]));
-                   writeln(Format('[%s] Heure d''allumage : %s',[FormatDateTime(
-                           'hh:nn:ss',Now), FormatDateTime('hh:nn:ss',ontime)]))
-                   ;
-                   writeln(Format('[%s] Heure d''extinction : %s',[
-                           FormatDateTime('hh:nn:ss',Now), FormatDateTime(
-                                                                      'hh:nn:ss'
-                                                                          ,
-                                                                         offtime
-                   )]));
-                   writeln(Format('[%s] État actuel : %s',[FormatDateTime(
-                           'hh:nn:ss',Now), state]));
+                  //  writeln(Format('[%s] Mode automatique activé',[FormatDateTime('hh:nn:ss',Now)]));
+                  //  writeln(Format('[%s] Heure d''allumage : %s',[FormatDateTime('hh:nn:ss',Now), FormatDateTime('hh:nn:ss',ontime)]));
+                  //  writeln(Format('[%s] Heure d''extinction : %s',[FormatDateTime('hh:nn:ss',Now), FormatDateTime('hh:nn:ss',offtime )]));
+                  //  writeln(Format('[%s] État actuel : %s',[FormatDateTime('hh:nn:ss',Now), state]));
                    If ((CurrentTime >= ontime) And (CurrentTime < offtime)) And
                       (state <> 'day') Then
                      Begin
                        SetLightingMode('day');
                        LastCommand := 'day';
-                       Writeln(Format('[%s] Mode auto: appel /day',[
-                               FormatDateTime('hh:nn:ss',now)]));
+                       Writeln(Format('[%s] Mode auto: appel /day',[FormatDateTime('hh:nn:ss',now)]));
                      End
                    Else
                      If (CurrentTime >= OffTime) And (state <> 'night') Then
                        Begin
                          SetLightingMode('night');
                          LastCommand := 'night';
-                         Writeln(Format('[%s] Mode auto: appel /night',[
-                                 FormatDateTime('hh:nn:ss',now)]));
+                         Writeln(Format('[%s] Mode auto: appel /night',[FormatDateTime('hh:nn:ss',now)]));
                        End;
                  End;
       End;
       
-      writeln(format('[%s] Attente de %d ms',[FormatDateTime('hh:nn:ss',Now),
-      SLEEP_MS]));
+      // writeln(format('[%s] Attente de %d ms',[FormatDateTime('hh:nn:ss',Now), SLEEP_MS]));
       sleep(SLEEP_MS);
     End;
 End;
