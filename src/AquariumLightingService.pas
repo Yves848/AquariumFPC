@@ -12,8 +12,8 @@ fphttpserver, HTTPDefs;
 
 Type 
   TServiceMode = (smAuto,smManual);
-
-Var 
+  
+Var
   CurrentServiceMode : TServiceMode;
   OnTime, OffTime : ttime;
   ManualState,  LastCommand : string;
@@ -35,7 +35,7 @@ Begin
 End;
 
 Type 
-  tWebServerThread = Class(TThread)
+tWebServerThread = Class(TThread)
     Private 
       FServer : TFPHTTPServer;
       base_url : String;
@@ -52,12 +52,13 @@ Type
   End;
 
   constructor tWebServerThread.Create(pBase_url: String = '');
+
 Begin
   inherited Create(False);
   FreeOnTerminate := True;
   base_url := pBase_url;
   FServer := TFPHTTPServer.Create(Nil);
-  FServer.Port := 80;
+  FServer.Port := 8080;
   FServer.OnRequest := @ServerRequest;
 End;
 
@@ -88,9 +89,11 @@ Begin
 
   If Query = '/Status' Then
     Begin
+    
       sMode := IfThen(CurrentServiceMode = smAuto,'auto','manual');
-      AResponse.Content := Format('{"mode": "%s", "manual_state": "%s", "on_time": "%s", "off_time":"%s", "last_command": "%s"}'
-                           ,[sMode,ManualState, OnTime, OffTime, LastCommand]);
+      AResponse.ContentType := 'application/json; charset=utf-8';
+      AResponse.Contents.Text := Format('{"mode": "%s", "manual_state": "%s", "on_time": "%s", "off_time":"%s", "last_command": "%s"}'
+                           ,[sMode,ManualState, timetostr(OnTime), timetostr(OffTime), LastCommand]);
       AResponse.Code := 200;
     End
   Else If Pos('/setmode',Query) = 1 Then
@@ -148,11 +151,11 @@ Begin
                                       Format(
 
                       '<p><span class="label">Heure d''allumage :</span> %s</p>'
-                                      , [OnTime]) + LineEnding +
+                                      , [timetostr(OnTime)]) + LineEnding +
                                       Format(
 
                     '<p><span class="label">Heure d''extinction :</span> %s</p>'
-                                      , [OffTime]) + LineEnding +
+                                      , [timetostr(OffTime)]) + LineEnding +
                                       Format(
             '<p><span class="label">Dernière commande envoyée :</span> %s</p>'
                                       , [LastCommand]) + LineEnding +
@@ -174,7 +177,7 @@ Begin
       AResponse.Code := 404;
       AResponse.Content := '{"error": "Not Found connard"}';
     End;
-
+  AResponse.SendContent;
 End;
 
 Function CallAPI(Const Endpoint: String) : string;
@@ -358,15 +361,18 @@ Begin
                        End;
                  End;
       End;
+      
       writeln(format('[%s] Attente de %d ms',[FormatDateTime('hh:nn:ss',Now),
       SLEEP_MS]));
       sleep(SLEEP_MS);
     End;
 End;
 
+var 
+  WebServer: tWebServerThread;
 Begin
-  With tWebServerThread.create Do
-    Writeln('Serveur HTTP démarré sur le port 8080.');
+  WebServer := tWebServerThread.Create;
+  Writeln('Serveur HTTP démarré sur le port 8080.');
 
   RunService;
 End.
